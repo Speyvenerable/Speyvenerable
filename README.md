@@ -33,8 +33,6 @@ I design in Figma and turn the designs into real websites with cyberpunk / cyber
 - **Gmail:** [Bathlukspey@gmail.com](mailto:Bathlukspey@gmail.com)
 - **Portfolio:** [speyvenerable.github.io/Portfolio](https://speyvenerable.github.io/Portfolio/)
 
-<img src="assets/views.svg" alt="/VIEWS" width="100%">
-
 <div align="center">
 
 <img src="https://komarev.com/ghpvc/?username=Speyvenerable&label=PROFILE+VIEWS&color=1f6fe6&labelColor=0d2250&style=for-the-badge" alt="Profile views">
