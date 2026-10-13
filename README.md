@@ -1,6 +1,6 @@
 <div align="center">
 
-<a>
+<a href="https://speyvenerable.github.io/Portfolio/">
   <img src="assets/header.svg" alt="Speyvenerable" width="100%">
 </a>
 
@@ -22,7 +22,7 @@ I design in Figma and turn the designs into real websites with cyberpunk / cyber
 
 <img src="assets/projects.svg" alt="/PROJECTS" width="100%">
 
-| Project | Some of my project is still ongoing so these two are the finished. |
+| Project | What it is |
 | :-- | :-- |
 | **[Epubreader](https://speyvenerable.github.io/Epubreader/)** | A website/app to read novels for free. Upload an `.EPUB` file and read it offline: chapter contents, clean UI, from head to toe. |
 | **[Profile Portfolio](https://speyvenerable.github.io/Portfolio/)** | My cyberpunk portfolio: one smooth scroll, a glitch cursor, a music box, and a gallery that opens from a folder. |
@@ -32,6 +32,8 @@ I design in Figma and turn the designs into real websites with cyberpunk / cyber
 - **Discord:** `speyvenerable`
 - **Gmail:** [Bathlukspey@gmail.com](mailto:Bathlukspey@gmail.com)
 - **Portfolio:** [speyvenerable.github.io/Portfolio](https://speyvenerable.github.io/Portfolio/)
+
+<img src="assets/views.svg" alt="/VIEWS" width="100%">
 
 <div align="center">
 
