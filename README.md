@@ -47,6 +47,8 @@ Cyberpunk one-scroll portfolio with a glitch gallery and music.<br/><br/>
 <div align="center">
 
 <img src="assets/views.svg" alt="/VIEWS" width="100%"/>
+<img src="https://img.shields.io/github/followers/Speyvenerable?label=Followers&style=for-the-badge" alt="Followers"/>
+<img src="https://img.shields.io/github/repos/Speyvenerable?label=Repos&style=for-the-badge" alt="Repos"/>
 
 <img src="https://komarev.com/ghpvc/?username=Speyvenerable&label=VIEWS&color=1f6fe6&style=for-the-badge" alt="profile views"/>
 
