@@ -1,0 +1,25 @@
+name: Update stats
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          pip install fonttools
+          curl -sL -o font.woff https://cdn.jsdelivr.net/npm/@fontsource/dotgothic16@5.3.1/files/dotgothic16-latin-400-normal.woff
+          python3 stats.py
+        env:
+          GH_USER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FONT: font.woff
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/stats.svg
+          git diff --cached --quiet || (git commit -m "update stats" && git push)
