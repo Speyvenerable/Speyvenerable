@@ -32,9 +32,9 @@ NAME='SPEYVENERABLE'; ns=116; nls=5
 nw=width(NAME,ns,nls); nx=(W-nw)/2; ny=236
 name_d=path(NAME,ns,nx,ny,nls)
 tag_d=path('/PROFILE',30,30,50)
-title_d=path('Hello, World...',26,0,0)
-tw=width('Hello, World...',26)
-title_d=path('Hello, World...',26,(W+330-tw)/2+60,48)
+title_d=path('Made by Spey...',26,0,0)
+tw=width('Made by Spey...',26)
+title_d=path('Made by Spey...',26,(W+330-tw)/2+60,48)
 # glitch timing (dur 5s): bursts at ~ .30-.36 and .70-.74
 def anim(name,frames):
     return f'@keyframes {name}{{{frames}}}'
