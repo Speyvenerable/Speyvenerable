@@ -1,42 +1,53 @@
 <div align="center">
 
-<a href="https://speyvenerable.github.io/Portfolio/">
-  <img src="assets/header.svg" alt="Speyvenerable" width="100%">
-</a>
+<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/header.svg" alt="SPEYVENERABLE" width="100%"/></a>
 
-<br>
+<br/>
 
-<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="Portfolio" height="52"></a>
-<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="Epubreader" height="52"></a>
-<a href="https://discord.com/users/speyvenerable"><img src="assets/btn-discord.svg" alt="Discord" height="52"></a>
-<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="Gmail" height="52"></a>
+<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="44"/></a>
+<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="44"/></a>
+<a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="44"/></a>
+<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="44"/></a>
+
+<img src="assets/about.svg" alt="/ABOUT" width="100%"/>
 
 </div>
 
-<br>
+Hi, I'm **Spey** (speyvenerable). I design and build personal software projects, mostly on Android with Acode and Termux. I like clean interfaces, a cyberpunk look and making things that work offline.
 
-<img src="assets/about.svg" alt="/ABOUT" width="100%">
+<div align="center">
 
-Hello, I'm **Spey** (you can call me cabbage if you want). I'm a **UI/UX designer** and a media lover: I read a lot of novels, manhwa and manhua, play games, and love football.
-I design in Figma and turn the designs into real websites with cyberpunk / cybercore vibes.
+<img src="assets/projects.svg" alt="/PROJECTS" width="100%"/>
 
-<img src="assets/projects.svg" alt="/PROJECTS" width="100%">
+<table>
+<tr>
+<td align="center" width="50%">
+<a href="https://speyvenerable.github.io/Epubreader/"><b>EPUBREADER</b></a><br/>
+Installable book reader. Upload EPUB, PDF or TXT, read offline, jump by chapter.<br/><br/>
+<a href="https://github.com/Speyvenerable/Epubreader">Code</a> · <a href="https://speyvenerable.github.io/Epubreader/">Open</a>
+</td>
+<td align="center" width="50%">
+<a href="https://speyvenerable.github.io/Portfolio/"><b>PROFILE PORTFOLIO</b></a><br/>
+Cyberpunk one-scroll portfolio with a glitch gallery and music.<br/><br/>
+<a href="https://github.com/Speyvenerable/Portfolio">Code</a> · <a href="https://speyvenerable.github.io/Portfolio/">Open</a>
+</td>
+</tr>
+</table>
 
-| Project | What it is |
-| :-- | :-- |
-| **[Epubreader](https://speyvenerable.github.io/Epubreader/)** | A website/app to read novels for free. Upload an `.EPUB` file and read it offline: chapter contents, clean UI, from head to toe. |
-| **[Profile Portfolio](https://speyvenerable.github.io/Portfolio/)** | My cyberpunk portfolio: one smooth scroll, a glitch cursor, a music box, and a gallery that opens from a folder. |
+<img src="assets/stats.svg" alt="followers, stars, repos" width="100%"/>
 
-<img src="assets/contact.svg" alt="/CONTACT" width="100%">
+<img src="assets/contact.svg" alt="/CONTACT" width="100%"/>
+
+</div>
 
 - **Discord:** `speyvenerable`
 - **Gmail:** [Bathlukspey@gmail.com](mailto:Bathlukspey@gmail.com)
 - **Portfolio:** [speyvenerable.github.io/Portfolio](https://speyvenerable.github.io/Portfolio/)
 
-<img src="assets/views.svg" alt="/VIEWS" width="100%">
-
 <div align="center">
 
-<img src="https://komarev.com/ghpvc/?username=Speyvenerable&label=PROFILE+VIEWS&color=1f6fe6&labelColor=0d2250&style=for-the-badge" alt="Profile views">
+<img src="assets/views.svg" alt="/VIEWS" width="100%"/>
+
+<img src="https://komarev.com/ghpvc/?username=Speyvenerable&label=VIEWS&color=1f6fe6&style=for-the-badge" alt="profile views"/>
 
 </div>
