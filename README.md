@@ -7,6 +7,7 @@
 <a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="52"/></a>
 <a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="52"/></a>
 
+<br/>
 
 <img src="assets/about.svg" alt="/ABOUT" width="100%"/>
 
