@@ -4,10 +4,10 @@
 
 <br/>
 
-<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="44"/></a>
-<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="44"/></a>
-<a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="44"/></a>
-<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="44"/></a>
+<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="52"/></a>
+<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="52"/></a>
+<a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="52"/></a>
+<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="52"/></a>
 
 <img src="assets/about.svg" alt="/ABOUT" width="100%"/>
 
