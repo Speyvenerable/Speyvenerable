@@ -1,13 +1,13 @@
 <div align="center">
 
 <a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/header.svg" alt="SPEYVENERABLE" width="100%"/></a>
-<br/>
-<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="52"/></a>
-<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="52"/></a>
-<a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="52"/></a>
-<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="52"/></a>
 
 <br/>
+
+<a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="44"/></a>
+<a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="44"/></a>
+<a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="44"/></a>
+<a href="mailto:Bathlukspey@gmail.com"><img src="assets/btn-gmail.svg" alt="GMAIL" height="44"/></a>
 
 <img src="assets/about.svg" alt="/ABOUT" width="100%"/>
 
@@ -34,7 +34,7 @@ Cyberpunk one-scroll portfolio with a glitch gallery and music.<br/><br/>
 </tr>
 </table>
 
-<img src="assets/stats.svg" alt="followers, stars, repos" width="100%"/>
+<img src="assets/stats.svg?v=2" alt="followers, stars, repos" width="100%"/>
 
 <img src="assets/contact.svg" alt="/CONTACT" width="100%"/>
 
