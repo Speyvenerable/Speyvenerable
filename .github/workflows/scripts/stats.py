@@ -1,68 +1,112 @@
-# Runs on GitHub (see ../workflows/stats.yml). You never need to run or edit this.
-# Counts followers + stars + repos and rewrites assets/stats.svg
-import os, json, urllib.request
+# Runs on GitHub (see .github/workflows/stats.yml). You never need to run or edit this.
+# Writes assets/stats.svg : followers, stars, repos + contributions and commits (total / day / week / month)
+# DAY = today (UTC), WEEK = last 7 days, MONTH = last 30 days.
+import os, json, urllib.request, datetime as dt
+from fontTools.ttLib import TTFont
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
+
 USER=os.environ.get('GH_USER','Speyvenerable'); TOKEN=os.environ.get('GITHUB_TOKEN','')
-OUT=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','assets','stats.svg')
-UPM=1000
-G=json.loads('''{"0":[500,"M91 -97H28V-664H91V-726H153V-787H349V-726H410V-664H472V-97H410V-35H349V28H153V-35H91ZM163 -107V-46H338V-107H400V-653H338V-715H163V-653H102V-107Z"],"1":[500,"M275 -715H152V-787H348V28H275Z"],"2":[500,"M28 -231H91V-293H153V-355H276V-417H338V-478H400V-653H338V-715H163V-653H102V-468H28V-664H91V-726H153V-787H349V-726H410V-664H472V-468H410V-406H349V-344H287V-282H163V-220H102V-46H472V28H28Z"],"3":[500,"M91 -97H28V-231H102V-107H163V-46H338V-107H400V-282H338V-344H153V-417H338V-478H400V-653H338V-715H163V-653H102V-529H28V-664H91V-726H153V-787H349V-726H410V-664H472V-468H410V-406H349V-355H410V-293H472V-97H410V-35H349V28H153V-35H91Z"],"4":[500,"M2 -169H64V-231H125V-355H184V-478H245V-602H306V-726H367V-787H437V-169H498V-97H437V28H367V-97H2ZM367 -169V-591H317V-468H256V-344H195V-220H134V-169Z"],"5":[500,"M91 -97H28V-169H102V-107H163V-46H338V-107H400V-344H338V-406H163V-344H102V-282H28V-787H410V-715H102V-417H153V-478H349V-417H410V-355H472V-97H410V-35H349V28H153V-35H91Z"],"6":[500,"M91 -97H28V-664H91V-726H153V-787H349V-726H410V-664H472V-529H400V-653H338V-715H163V-653H102V-417H153V-478H349V-417H410V-355H472V-97H410V-35H349V28H153V-35H91ZM163 -107V-46H338V-107H400V-344H338V-406H163V-344H102V-107Z"],"7":[500,"M153 -169H214V-355H276V-540H338V-664H400V-715H28V-787H472V-653H410V-529H349V-344H287V-159H225V28H153Z"],"8":[500,"M91 -97H28V-293H91V-355H153V-406H91V-468H28V-664H91V-726H153V-787H349V-726H410V-664H472V-468H410V-406H349V-355H410V-293H472V-97H410V-35H349V28H153V-35H91ZM338 -417V-478H400V-653H338V-715H163V-653H102V-478H163V-417ZM163 -107V-46H338V-107H400V-282H338V-344H163V-282H102V-107Z"],"9":[500,"M91 -97H28V-169H102V-107H163V-46H338V-107H400V-282H349V-220H153V-282H91V-344H28V-664H91V-726H153V-787H349V-726H410V-664H472V-97H410V-35H349V28H153V-35H91ZM338 -293V-355H400V-653H338V-715H163V-653H102V-355H163V-293Z"],"F":[500,"M28 -787H472V-715H102V-417H410V-344H102V28H28Z"],"O":[500,"M91 -97H28V-664H91V-726H153V-787H349V-726H410V-664H472V-97H410V-35H349V28H153V-35H91ZM163 -107V-46H338V-107H400V-653H338V-715H163V-653H102V-107Z"],"L":[500,"M28 -787H102V-46H472V28H28Z"],"W":[500,"M91 -220H28V-787H102V-231H153V-478H214V-726H287V-478H349V-231H400V-787H472V-220H410V28H338V-220H276V-468H225V-220H163V28H91Z"],"E":[500,"M28 -787H472V-715H102V-417H410V-344H102V-46H472V28H28Z"],"R":[500,"M28 -787H349V-726H410V-664H472V-468H410V-406H349V-355H410V-169H472V28H400V-159H338V-344H102V28H28ZM338 -417V-478H400V-653H338V-715H102V-417Z"],"S":[500,"M91 -97H28V-231H102V-107H163V-46H338V-107H400V-282H338V-344H153V-406H91V-468H28V-664H91V-726H153V-787H349V-726H410V-664H472V-529H400V-653H338V-715H163V-653H102V-478H163V-417H349V-355H410V-293H472V-97H410V-35H349V28H153V-35H91Z"],"T":[500,"M214 -653H28V-726H472V-653H287V28H214Z"],"A":[500,"M28 -169H91V-417H153V-602H214V-787H287V-602H349V-417H410V-169H472V28H400V-159H102V28H28ZM338 -231V-406H276V-591H225V-406H163V-231Z"],"P":[500,"M28 -787H349V-726H410V-664H472V-406H410V-344H349V-282H102V28H28ZM338 -355V-417H400V-653H338V-715H102V-355Z"],"/":[500,"M28 -107H90V-231H151V-355H213V-478H275V-602H337V-726H398V-849H471V-715H409V-591H347V-468H286V-344H224V-220H162V-97H100V28H28Z"]," ":[500,""]}''')
-def api(u):
+OUT='assets/stats.svg'
+F=TTFont(os.environ.get('FONT','font.woff')); UPM=F['head'].unitsPerEm
+gs=F.getGlyphSet(); cm=F.getBestCmap(); G={}
+for c in "0123456789 /ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+    pen=SVGPathPen(gs); gs[cm[ord(c)]].draw(TransformPen(pen,(1,0,0,-1,0,0))); G[c]=[F['hmtx'][cm[ord(c)]][0],pen.getCommands()]
+
+def rest(u):
     h={'Accept':'application/vnd.github+json','User-Agent':'stats'}
     if TOKEN: h['Authorization']='Bearer '+TOKEN
     return json.load(urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=30))
-if os.environ.get('SEED'): followers=stars=repos=0
+def gql(q):
+    h={'Authorization':'Bearer '+TOKEN,'User-Agent':'stats','Content-Type':'application/json'}
+    r=json.load(urllib.request.urlopen(urllib.request.Request('https://api.github.com/graphql',json.dumps({'query':q}).encode(),h),timeout=60))
+    if r.get('errors'): raise RuntimeError(r['errors'])
+    return r['data']['user']['contributionsCollection']
+def iso(t): return t.strftime('%Y-%m-%dT%H:%M:%SZ')
+def coll(a,b): return gql('{user(login:"%s"){contributionsCollection(from:"%s",to:"%s"){totalCommitContributions contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}}}'%(USER,iso(a),iso(b)))
+
+if os.environ.get('DEMO'):
+    followers,stars,repos=12,347,8; C=[1234,5,31,120]; M=[987,3,22,88]
 else:
-    followers=api(f'https://api.github.com/users/{USER}')['followers']; stars=repos=0; p=1
+    followers=rest(f'https://api.github.com/users/{USER}')['followers']; stars=repos=0; p=1
     while True:
-        b=api(f'https://api.github.com/users/{USER}/repos?per_page=100&type=owner&page={p}')
+        b=rest(f'https://api.github.com/users/{USER}/repos?per_page=100&type=owner&page={p}')
         for r in b:
             if not r.get('fork'): repos+=1; stars+=r.get('stargazers_count',0)
         if len(b)<100: break
         p+=1
-print(USER,followers,stars,repos)
+    now=dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
+    created=dt.datetime.fromisoformat(rest(f'https://api.github.com/users/{USER}')['created_at'].replace('Z','+00:00'))
+    tc=tm=0; days={}
+    for y in range(created.year,now.year+1):
+        a=max(created,dt.datetime(y,1,1,tzinfo=dt.timezone.utc)); z=min(now,dt.datetime(y,12,31,23,59,59,tzinfo=dt.timezone.utc))
+        d=coll(a,z); tc+=d['contributionCalendar']['totalContributions']; tm+=d['totalCommitContributions']
+        for w in d['contributionCalendar']['weeks']:
+            for x in w['contributionDays']: days[x['date']]=x['contributionCount']
+    today=now.date()
+    def cs(n): return sum(days.get((today-dt.timedelta(days=i)).isoformat(),0) for i in range(n))
+    start=dt.datetime(today.year,today.month,today.day,tzinfo=dt.timezone.utc)
+    def cm_(delta): return coll(max(now-delta,created),now)['totalCommitContributions']
+    C=[tc,cs(1),cs(7),cs(30)]
+    M=[tm,coll(start,now)['totalCommitContributions'],cm_(dt.timedelta(days=7)),cm_(dt.timedelta(days=30))]
+print(USER,followers,stars,repos,C,M)
+
 def w(t,s,ls=0): return sum(G[c][0]*s/UPM+ls for c in t)-ls
 def d(t,s,x,y,ls=0):
     k=s/UPM; out=[]; cx=x
     for c in t:
-        out.append(f'<path transform="translate({cx:.1f} {y}) scale({k:.5f})" d="{G[c][1]}"/>' if G[c][1] else ''); cx+=G[c][0]*k+ls
-    return '<g>'+''.join(out)+'</g>'
-def dd(t,s,x,y,ls=0):  # inner-markup, repeated with different fills via <use>
-    return d(t,s,x,y,ls)
-W,H=1000,300
-css='''
-@keyframes gr{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(-6px,2px)}32%{transform:translate(5px,-2px)}34%{transform:translate(-4px,1px)}36%{transform:translate(3px,0)}68%{transform:translate(6px,-2px)}70%{transform:translate(-5px,2px)}72%{transform:translate(2px,0)}}
-@keyframes gc{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(6px,-2px)}32%{transform:translate(-5px,2px)}34%{transform:translate(4px,-1px)}36%{transform:translate(-3px,0)}68%{transform:translate(-6px,2px)}70%{transform:translate(5px,-2px)}72%{transform:translate(-2px,0)}}
+        if G[c][1]: out.append(f'<path transform="translate({cx:.1f} {y}) scale({k:.5f})" d="{G[c][1]}"/>')
+        cx+=G[c][0]*k+ls
+    return ''.join(out)
+W,H=1000,630
+defs=[]; body=[]; n=[0]
+def num(val,cx,y,size,maxw):
+    v=f'{val:,}'.replace(',','') ; s=size
+    while w(v,s,3)>maxw: s-=4
+    i=n[0]; n[0]+=1
+    defs.append(f'<g id="n{i}">{d(v,s,cx-w(v,s,3)/2,y,3)}</g>')
+    body.append(f'<use href="#n{i}" fill="#2f7bff" opacity=".85" filter="url(#bl)"/><use class="r nm" href="#n{i}" fill="#ff2d55" style="mix-blend-mode:screen"/><use class="c nm" href="#n{i}" fill="#00f0ff" style="mix-blend-mode:screen"/><use class="m nm" href="#n{i}" fill="#fff"/>')
+def label(t,cx,y,size,fill='#cfe0ff'):
+    body.append(f'<g fill="{fill}">{d(t,size,cx-w(t,size,2)/2,y,2)}</g>')
+def line(x1,y1,x2,y2,o=.18): body.append(f'<rect x="{x1}" y="{y1}" width="{max(x2-x1,1.5)}" height="{max(y2-y1,1.5)}" fill="#fff" opacity="{o}"/>')
+# row A
+cw=(W-18)/3
+for i,(lab,v) in enumerate([('FOLLOWERS',followers),('STARS',stars),('REPOS',repos)]):
+    cx=9+cw*i+cw/2; num(v,cx,175,88,cw-40)
+    body.append(f'<rect x="{cx-70:.1f}" y="190" width="140" height="3" fill="url(#ul)"/>'); label(lab,cx,224,22)
+    if i: line(9+cw*i,100,9+cw*i+1.5,236)
+def section(title,vals,y0):
+    line(9,y0,W-9,y0+1.5,.3)
+    body.append(f'<g fill="#7db8ff">{d(title,22,34,y0+34,3)}</g>')
+    cw=(W-18)/4
+    for i,(lab,v) in enumerate(zip(['TOTAL','DAY','WEEK','MONTH'],vals)):
+        cx=9+cw*i+cw/2; num(v,cx,y0+112,66,cw-30)
+        body.append(f'<rect x="{cx-50:.1f}" y="{y0+124}" width="100" height="3" fill="url(#ul)"/>'); label(lab,cx,y0+156,20)
+        if i: line(9+cw*i,y0+52,9+cw*i+1.5,y0+166)
+section('CONTRIBUTIONS',C,248)
+section('COMMITS',M,248+180)
+css='''@keyframes gr{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(-5px,2px)}32%{transform:translate(4px,-2px)}34%{transform:translate(-3px,1px)}36%{transform:translate(2px,0)}68%{transform:translate(5px,-2px)}70%{transform:translate(-4px,2px)}72%{transform:translate(2px,0)}}
+@keyframes gc{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(5px,-2px)}32%{transform:translate(-4px,2px)}34%{transform:translate(3px,-1px)}36%{transform:translate(-2px,0)}68%{transform:translate(-5px,2px)}70%{transform:translate(4px,-2px)}72%{transform:translate(-2px,0)}}
 @keyframes gm{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}31%{transform:translate(-2px,0)}33%{transform:translate(2px,1px)}69%{transform:translate(2px,0)}71%{transform:translate(-2px,-1px)}}
-@keyframes scan{0%{transform:translateY(-60px)}100%{transform:translateY(320px)}}
+@keyframes scan{0%{transform:translateY(-60px)}100%{transform:translateY(660px)}}
 @keyframes glow{0%,100%{filter:drop-shadow(0 0 4px #3a8bff)}50%{filter:drop-shadow(0 0 12px #5aa0ff)}}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
 .r{animation:gr 5s steps(1,end) infinite}.c{animation:gc 5s steps(1,end) infinite}.m{animation:gm 5s steps(1,end) infinite}
-.sc{animation:scan 5.5s linear infinite}.frame{animation:glow 3.4s ease-in-out infinite}.tw{animation:twinkle 2.6s ease-in-out infinite}
-'''
-cols=[('FOLLOWERS',followers),('STARS',stars),('REPOS',repos)]
-cw=(W-18)/3; cols_svg=[]
-for i,(lab,val) in enumerate(cols):
-    v=str(val); cx=9+cw*i+cw/2; s=104
-    while w(v,s,4)>cw-40: s-=6
-    x=cx-w(v,s,4)/2; y=190+ (104-s)*0.0 
-    lx=cx-w(lab,24,2)/2
-    P=d(v,s,x,y,4)
-    cols_svg.append(f'''<g class="n"><g fill="#2f7bff" opacity=".85" filter="url(#bl)">{P}</g>
-<g class="r nm" fill="#ff2d55" style="mix-blend-mode:screen">{P}</g><g class="c nm" fill="#00f0ff" style="mix-blend-mode:screen">{P}</g><g class="m nm" fill="#fff">{P}</g></g>
-<g fill="#cfe0ff">{d(lab,24,lx,246,2)}</g><rect x="{cx-70:.1f}" y="206" width="140" height="3" fill="url(#ul)"/>''')
-    if i: cols_svg.append(f'<rect x="{9+cw*i:.1f}" y="100" width="1.5" height="170" fill="#fff" opacity=".18"/>')
-dots=''.join(f'<rect class="tw" x="{x}" y="{y}" width="4" height="4" fill="#7df9ff" style="animation-delay:{t}s"/>' for x,y,t in [(70,130,0),(930,150,.6),(120,275,1.1),(880,110,1.7),(500,120,2.2),(945,260,.3),(340,115,1.4),(660,280,.9)])
-svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="{USER}: {followers} followers, {stars} stars, {repos} repos">
-<title>{followers} followers · {stars} stars · {repos} repos</title>
+.sc{animation:scan 6s linear infinite}.frame{animation:glow 3.4s ease-in-out infinite}.tw{animation:twinkle 2.6s ease-in-out infinite}.nm{transform-box:fill-box}'''
+dots=''.join(f'<rect class="tw" x="{x}" y="{y}" width="4" height="4" fill="#7df9ff" style="animation-delay:{t}s"/>' for x,y,t in [(70,130,0),(930,150,.6),(120,275,1.1),(880,110,1.7),(500,120,2.2),(945,420,.3),(340,115,1.4),(660,590,.9),(60,560,1.9),(900,330,1.2)])
+svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="{USER} stats">
+<title>{followers} followers, {stars} stars, {repos} repos; contributions {C[0]} total, {C[1]} today, {C[2]} week, {C[3]} month; commits {M[0]} total, {M[1]} today, {M[2]} week, {M[3]} month</title>
 <defs>
 <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06122a"/><stop offset="1" stop-color="#020812"/></linearGradient>
 <radialGradient id="vg" cx="50%" cy="55%" r="65%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".65"/></radialGradient>
 <linearGradient id="sb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa0ff" stop-opacity="0"/><stop offset=".5" stop-color="#7db8ff" stop-opacity=".22"/><stop offset="1" stop-color="#5aa0ff" stop-opacity="0"/></linearGradient>
 <linearGradient id="ul" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f6fe6" stop-opacity="0"/><stop offset=".5" stop-color="#7db8ff"/><stop offset="1" stop-color="#1f6fe6" stop-opacity="0"/></linearGradient>
 <pattern id="sl" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1.4" fill="#000" opacity=".28"/></pattern>
-<filter id="bl" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+<filter id="bl" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
 <clipPath id="inner"><rect x="9" y="9" width="{W-18}" height="{H-18}"/></clipPath>
+{''.join(defs)}
 </defs>
-<style>{css}.nm{{transform-box:fill-box}}</style>
+<style>{css}</style>
 <rect width="{W}" height="{H}" fill="#000"/>
 <g clip-path="url(#inner)">
 <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#bg)"/>
@@ -73,7 +117,7 @@ svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}
 <rect x="309" y="9" width="1.5" height="70" fill="#fff" opacity=".35"/>
 <g fill="#fff" transform="translate(0,10)">{d('/STATS',30,30,50)}</g>
 <rect x="340" y="38" width="16" height="16" fill="#1226ff"/><rect x="364" y="38" width="16" height="16" fill="#ff2a2a"/><rect x="388" y="38" width="16" height="16" fill="#1aff3a"/>
-{''.join(cols_svg)}
+{''.join(body)}
 <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#sl)"/>
 <rect class="sc" x="9" y="0" width="{W-18}" height="60" fill="url(#sb)"/>
 <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#vg)"/>
