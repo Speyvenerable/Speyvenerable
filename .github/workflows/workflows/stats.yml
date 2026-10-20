@@ -4,7 +4,7 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
   push:
-    paths: ['.github/scripts/stats.py', '.github/workflows/stats.yml']
+    paths: ['.github/workflows/stats.yml']
 permissions:
   contents: write
 jobs:
@@ -12,12 +12,149 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: python .github/scripts/stats.py
+      - name: Build stats picture
         env:
           GH_USER: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FONT: font.woff
+        run: |
+          pip install fonttools
+          curl -sL -o font.woff https://cdn.jsdelivr.net/npm/@fontsource/dotgothic16@5.3.1/files/dotgothic16-latin-400-normal.woff
+          python3 - <<'PY'
+          # Runs on GitHub (see .github/workflows/stats.yml). You never need to run or edit this.
+          # Writes assets/stats.svg : followers, stars, repos + contributions and commits (total / day / week / month)
+          # DAY = today (UTC), WEEK = last 7 days, MONTH = last 30 days.
+          import os, json, urllib.request, datetime as dt
+          from fontTools.ttLib import TTFont
+          from fontTools.pens.svgPathPen import SVGPathPen
+          from fontTools.pens.transformPen import TransformPen
+
+          USER=os.environ.get('GH_USER','Speyvenerable'); TOKEN=os.environ.get('GITHUB_TOKEN','')
+          OUT='assets/stats.svg'
+          F=TTFont(os.environ.get('FONT','font.woff')); UPM=F['head'].unitsPerEm
+          gs=F.getGlyphSet(); cm=F.getBestCmap(); G={}
+          for c in "0123456789 /ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+              pen=SVGPathPen(gs); gs[cm[ord(c)]].draw(TransformPen(pen,(1,0,0,-1,0,0))); G[c]=[F['hmtx'][cm[ord(c)]][0],pen.getCommands()]
+
+          def rest(u):
+              h={'Accept':'application/vnd.github+json','User-Agent':'stats'}
+              if TOKEN: h['Authorization']='Bearer '+TOKEN
+              return json.load(urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=30))
+          def gql(q):
+              h={'Authorization':'Bearer '+TOKEN,'User-Agent':'stats','Content-Type':'application/json'}
+              r=json.load(urllib.request.urlopen(urllib.request.Request('https://api.github.com/graphql',json.dumps({'query':q}).encode(),h),timeout=60))
+              if r.get('errors'): raise RuntimeError(r['errors'])
+              return r['data']['user']['contributionsCollection']
+          def iso(t): return t.strftime('%Y-%m-%dT%H:%M:%SZ')
+          def coll(a,b): return gql('{user(login:"%s"){contributionsCollection(from:"%s",to:"%s"){totalCommitContributions contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}}}'%(USER,iso(a),iso(b)))
+
+          if os.environ.get('DEMO'):
+              followers,stars,repos=12,347,8; C=[1234,5,31,120]; M=[987,3,22,88]
+          else:
+              followers=rest(f'https://api.github.com/users/{USER}')['followers']; stars=repos=0; p=1
+              while True:
+                  b=rest(f'https://api.github.com/users/{USER}/repos?per_page=100&type=owner&page={p}')
+                  for r in b:
+                      if not r.get('fork'): repos+=1; stars+=r.get('stargazers_count',0)
+                  if len(b)<100: break
+                  p+=1
+              C=[0,0,0,0]; M=[0,0,0,0]
+              try:
+                  now=dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
+                  created=dt.datetime.fromisoformat(rest(f'https://api.github.com/users/{USER}')['created_at'].replace('Z','+00:00'))
+                  tc=tm=0; days={}
+                  for y in range(created.year,now.year+1):
+                      a=max(created,dt.datetime(y,1,1,tzinfo=dt.timezone.utc)); z=min(now,dt.datetime(y,12,31,23,59,59,tzinfo=dt.timezone.utc))
+                      d=coll(a,z); tc+=d['contributionCalendar']['totalContributions']; tm+=d['totalCommitContributions']
+                      for w in d['contributionCalendar']['weeks']:
+                          for x in w['contributionDays']: days[x['date']]=x['contributionCount']
+                  today=now.date()
+                  def cs(n): return sum(days.get((today-dt.timedelta(days=i)).isoformat(),0) for i in range(n))
+                  start=dt.datetime(today.year,today.month,today.day,tzinfo=dt.timezone.utc)
+                  def cm_(delta): return coll(max(now-delta,created),now)['totalCommitContributions']
+                  C=[tc,cs(1),cs(7),cs(30)]
+                  M=[tm,coll(start,now)['totalCommitContributions'],cm_(dt.timedelta(days=7)),cm_(dt.timedelta(days=30))]
+              except Exception as e:
+                  print('CONTRIBUTIONS FAILED (followers/stars still updated):',e)
+          print(USER,followers,stars,repos,C,M)
+
+          def w(t,s,ls=0): return sum(G[c][0]*s/UPM+ls for c in t)-ls
+          def d(t,s,x,y,ls=0):
+              k=s/UPM; out=[]; cx=x
+              for c in t:
+                  if G[c][1]: out.append(f'<path transform="translate({cx:.1f} {y}) scale({k:.5f})" d="{G[c][1]}"/>')
+                  cx+=G[c][0]*k+ls
+              return ''.join(out)
+          W,H=1000,630
+          defs=[]; body=[]; n=[0]
+          def num(val,cx,y,size,maxw):
+              v=f'{val:,}'.replace(',','') ; s=size
+              while w(v,s,3)>maxw: s-=4
+              i=n[0]; n[0]+=1
+              defs.append(f'<g id="n{i}">{d(v,s,cx-w(v,s,3)/2,y,3)}</g>')
+              body.append(f'<use href="#n{i}" fill="#2f7bff" opacity=".85" filter="url(#bl)"/><use class="r nm" href="#n{i}" fill="#ff2d55" style="mix-blend-mode:screen"/><use class="c nm" href="#n{i}" fill="#00f0ff" style="mix-blend-mode:screen"/><use class="m nm" href="#n{i}" fill="#fff"/>')
+          def label(t,cx,y,size,fill='#cfe0ff'):
+              body.append(f'<g fill="{fill}">{d(t,size,cx-w(t,size,2)/2,y,2)}</g>')
+          def line(x1,y1,x2,y2,o=.18): body.append(f'<rect x="{x1}" y="{y1}" width="{max(x2-x1,1.5)}" height="{max(y2-y1,1.5)}" fill="#fff" opacity="{o}"/>')
+          # row A
+          cw=(W-18)/3
+          for i,(lab,v) in enumerate([('FOLLOWERS',followers),('STARS',stars),('REPOS',repos)]):
+              cx=9+cw*i+cw/2; num(v,cx,175,88,cw-40)
+              body.append(f'<rect x="{cx-70:.1f}" y="190" width="140" height="3" fill="url(#ul)"/>'); label(lab,cx,224,22)
+              if i: line(9+cw*i,100,9+cw*i+1.5,236)
+          def section(title,vals,y0):
+              line(9,y0,W-9,y0+1.5,.3)
+              body.append(f'<g fill="#7db8ff">{d(title,22,34,y0+34,3)}</g>')
+              cw=(W-18)/4
+              for i,(lab,v) in enumerate(zip(['TOTAL','DAY','WEEK','MONTH'],vals)):
+                  cx=9+cw*i+cw/2; num(v,cx,y0+112,66,cw-30)
+                  body.append(f'<rect x="{cx-50:.1f}" y="{y0+124}" width="100" height="3" fill="url(#ul)"/>'); label(lab,cx,y0+156,20)
+                  if i: line(9+cw*i,y0+52,9+cw*i+1.5,y0+166)
+          section('CONTRIBUTIONS',C,248)
+          section('COMMITS',M,248+180)
+          css='''@keyframes gr{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(-5px,2px)}32%{transform:translate(4px,-2px)}34%{transform:translate(-3px,1px)}36%{transform:translate(2px,0)}68%{transform:translate(5px,-2px)}70%{transform:translate(-4px,2px)}72%{transform:translate(2px,0)}}
+          @keyframes gc{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}30%{transform:translate(5px,-2px)}32%{transform:translate(-4px,2px)}34%{transform:translate(3px,-1px)}36%{transform:translate(-2px,0)}68%{transform:translate(-5px,2px)}70%{transform:translate(4px,-2px)}72%{transform:translate(-2px,0)}}
+          @keyframes gm{0%,28%,38%,66%,76%,100%{transform:translate(0,0)}31%{transform:translate(-2px,0)}33%{transform:translate(2px,1px)}69%{transform:translate(2px,0)}71%{transform:translate(-2px,-1px)}}
+          @keyframes scan{0%{transform:translateY(-60px)}100%{transform:translateY(660px)}}
+          @keyframes glow{0%,100%{filter:drop-shadow(0 0 4px #3a8bff)}50%{filter:drop-shadow(0 0 12px #5aa0ff)}}
+          @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:1}}
+          .r{animation:gr 5s steps(1,end) infinite}.c{animation:gc 5s steps(1,end) infinite}.m{animation:gm 5s steps(1,end) infinite}
+          .sc{animation:scan 6s linear infinite}.frame{animation:glow 3.4s ease-in-out infinite}.tw{animation:twinkle 2.6s ease-in-out infinite}.nm{transform-box:fill-box}'''
+          dots=''.join(f'<rect class="tw" x="{x}" y="{y}" width="4" height="4" fill="#7df9ff" style="animation-delay:{t}s"/>' for x,y,t in [(70,130,0),(930,150,.6),(120,275,1.1),(880,110,1.7),(500,120,2.2),(945,420,.3),(340,115,1.4),(660,590,.9),(60,560,1.9),(900,330,1.2)])
+          svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="{USER} stats">
+          <title>{followers} followers, {stars} stars, {repos} repos; contributions {C[0]} total, {C[1]} today, {C[2]} week, {C[3]} month; commits {M[0]} total, {M[1]} today, {M[2]} week, {M[3]} month</title>
+          <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06122a"/><stop offset="1" stop-color="#020812"/></linearGradient>
+          <radialGradient id="vg" cx="50%" cy="55%" r="65%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".65"/></radialGradient>
+          <linearGradient id="sb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa0ff" stop-opacity="0"/><stop offset=".5" stop-color="#7db8ff" stop-opacity=".22"/><stop offset="1" stop-color="#5aa0ff" stop-opacity="0"/></linearGradient>
+          <linearGradient id="ul" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f6fe6" stop-opacity="0"/><stop offset=".5" stop-color="#7db8ff"/><stop offset="1" stop-color="#1f6fe6" stop-opacity="0"/></linearGradient>
+          <pattern id="sl" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1.4" fill="#000" opacity=".28"/></pattern>
+          <filter id="bl" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
+          <clipPath id="inner"><rect x="9" y="9" width="{W-18}" height="{H-18}"/></clipPath>
+          {''.join(defs)}
+          </defs>
+          <style>{css}</style>
+          <rect width="{W}" height="{H}" fill="#000"/>
+          <g clip-path="url(#inner)">
+          <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#bg)"/>
+          <g opacity=".9">{dots}</g>
+          <rect x="9" y="9" width="{W-18}" height="70" fill="#0d2250" opacity=".85"/>
+          <rect x="9" y="9" width="300" height="70" fill="#14306a" opacity=".9"/>
+          <rect x="9" y="78" width="{W-18}" height="1.5" fill="#fff" opacity=".35"/>
+          <rect x="309" y="9" width="1.5" height="70" fill="#fff" opacity=".35"/>
+          <g fill="#fff" transform="translate(0,10)">{d('/STATS',30,30,50)}</g>
+          <rect x="340" y="38" width="16" height="16" fill="#1226ff"/><rect x="364" y="38" width="16" height="16" fill="#ff2a2a"/><rect x="388" y="38" width="16" height="16" fill="#1aff3a"/>
+          {''.join(body)}
+          <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#sl)"/>
+          <rect class="sc" x="9" y="0" width="{W-18}" height="60" fill="url(#sb)"/>
+          <rect x="9" y="9" width="{W-18}" height="{H-18}" fill="url(#vg)"/>
+          </g>
+          <rect class="frame" x="4.5" y="4.5" width="{W-9}" height="{H-9}" fill="none" stroke="#1f6fe6" stroke-width="5"/>
+          <g fill="none" stroke="#fff" stroke-width="2.5"><path d="M22 96h22M22 96v22"/><path d="M{W-22} 96h-22M{W-22} 96v22"/><path d="M22 {H-22}h22M22 {H-22}v-22"/><path d="M{W-22} {H-22}h-22M{W-22} {H-22}v-22"/></g>
+          </svg>'''
+          open(OUT,'w').write(svg)
+
+          PY
       - name: Save
         run: |
           git config user.name "github-actions[bot]"
