@@ -34,7 +34,7 @@ Cyberpunk one-scroll portfolio with a glitch gallery and music.<br/><br/>
 </tr>
 </table>
 
-<img src="assets/stats.svg?v=2" alt="followers, stars, repos" width="100%"/>
+<img src="assets/stats.svg" alt="followers, stars, repos" width="100%"/>
 
 <img src="assets/contact.svg" alt="/CONTACT" width="100%"/>
 
