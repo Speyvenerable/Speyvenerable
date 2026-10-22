@@ -1,9 +1,7 @@
 <div align="center">
 
 <a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/header.svg" alt="SPEYVENERABLE" width="100%"/></a>
-
 <br/>
-
 <a href="https://speyvenerable.github.io/Portfolio/"><img src="assets/btn-portfolio.svg" alt="PORTFOLIO" height="44"/></a>
 <a href="https://speyvenerable.github.io/Epubreader/"><img src="assets/btn-epubreader.svg" alt="EPUBREADER" height="44"/></a>
 <a href="https://discord.com/"><img src="assets/btn-discord.svg" alt="DISCORD" height="44"/></a>
